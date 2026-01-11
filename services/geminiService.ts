@@ -75,15 +75,22 @@ export const processIDCardOCR = async (base64Image: string): Promise<GuestData> 
   const systemInstruction = `
     You are an expert OCR system for Thai National ID Cards.
     Extract the following information from the image and return it as JSON.
-    Fields:
-    - idNumber: The 13-digit identification number.
-    - title: Mr., Ms., Mrs., or Thai equivalent.
-    - firstNameTH, lastNameTH: Name in Thai.
-    - firstNameEN, lastNameEN: Name in English.
+    Guidelines:
+    - Convert Thai Buddhist Era dates to Christian Era (e.g., 2567 -> 2024).
+    - Ensure idNumber is exactly 13 digits without spaces.
+    - Extract address exactly as written.
+    - Religion is optional, extract if visible.
+    
+    Fields mapping:
+    - idNumber: 13-digit identification number.
+    - title: Thai title (นาย, นาง, นางสาว).
+    - firstNameTH, lastNameTH: Thai name.
+    - firstNameEN, lastNameEN: English name.
     - address: Full address string.
     - dob: Date of birth (YYYY-MM-DD).
     - issueDate: Card issue date (YYYY-MM-DD).
     - expiryDate: Card expiry date (YYYY-MM-DD).
+    - religion: Religion name in Thai.
   `;
 
   try {
@@ -92,7 +99,7 @@ export const processIDCardOCR = async (base64Image: string): Promise<GuestData> 
       contents: {
         parts: [
           { inlineData: { mimeType: 'image/jpeg', data: base64Image } },
-          { text: "Extract Thai ID Card information as JSON." }
+          { text: "Analyze the Thai ID card and extract all details into JSON format according to the schema." }
         ]
       },
       config: {
@@ -110,17 +117,19 @@ export const processIDCardOCR = async (base64Image: string): Promise<GuestData> 
             address: { type: Type.STRING },
             dob: { type: Type.STRING },
             issueDate: { type: Type.STRING },
-            expiryDate: { type: Type.STRING }
-          }
+            expiryDate: { type: Type.STRING },
+            religion: { type: Type.STRING }
+          },
+          required: ["idNumber", "firstNameTH", "lastNameTH"]
         }
       }
     });
 
     const text = response.text;
-    if (!text) throw new Error("AI ไม่สามารถประมวลผลบัตรประชาชนได้");
+    if (!text) throw new Error("AI could not read the ID card. Please ensure the photo is clear and well-lit.");
     return JSON.parse(text) as GuestData;
   } catch (error: any) {
     console.error("ID OCR Error:", error);
-    throw new Error(error.message || "ไม่สามารถอ่านบัตรประชาชนได้");
+    throw new Error(error.message || "ไม่สามารถอ่านบัตรประชาชนได้ กรุณาถ่ายใหม่");
   }
 };

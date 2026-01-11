@@ -14,8 +14,16 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions, onDelet
   const [filterType, setFilterType] = useState<'ALL' | TransactionType>('ALL');
 
   const filteredTransactions = transactions.filter(tx => {
-    const matchesSearch = tx.description.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          tx.category.toLowerCase().includes(searchTerm.toLowerCase());
+    const guestName = tx.guestData ? `${tx.guestData.firstNameTH} ${tx.guestData.lastNameTH}`.toLowerCase() : '';
+    const guestNameEN = tx.guestData ? `${tx.guestData.firstNameEN} ${tx.guestData.lastNameEN}`.toLowerCase() : '';
+    
+    const matchesSearch = 
+      tx.description.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      tx.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      guestName.includes(searchTerm.toLowerCase()) ||
+      guestNameEN.includes(searchTerm.toLowerCase()) ||
+      tx.guestData?.idNumber?.includes(searchTerm);
+
     const matchesType = filterType === 'ALL' || tx.type === filterType;
     return matchesSearch && matchesType;
   });
@@ -26,7 +34,7 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions, onDelet
         <div className="bg-slate-50 p-8 rounded-full mb-6 text-4xl">🧾</div>
         <p className="text-sm font-bold text-slate-800">ยังไม่มีประวัติรายการ</p>
         <p className="text-[11px] mt-2 opacity-60 max-w-[200px] text-center leading-relaxed">
-          เริ่มบันทึกรายการด้วยการสแกนสลิป หรือดึงข้อมูลจากระบบ PMS ของรีสอร์ต
+          เริ่มบันทึกรายการด้วยการสแกนสลิป หรือเช็คอินแขกด้วยการสแกนบัตรประชาชน
         </p>
       </div>
     );
@@ -39,7 +47,7 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions, onDelet
         <div className="relative">
           <input 
             type="text" 
-            placeholder="ค้นหาตามชื่อรายการ หรือหมวดหมู่..."
+            placeholder="ค้นหาตามชื่อรายการ, หมวดหมู่, ชื่อแขก หรือเลขบัตรประชาชน..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full bg-slate-50 border-none rounded-2xl py-3.5 pl-12 pr-4 text-sm font-medium focus:ring-2 focus:ring-indigo-500 transition-all placeholder:text-slate-300"
@@ -82,7 +90,14 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions, onDelet
               {/* Transaction Main Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start mb-1.5">
-                  <h4 className="font-bold text-slate-800 truncate text-sm leading-tight pr-2">{tx.description}</h4>
+                  <h4 className="font-bold text-slate-800 truncate text-sm leading-tight pr-2">
+                    {tx.description}
+                    {tx.guestData && (
+                      <span className="block text-[10px] text-indigo-500 font-black mt-0.5">
+                        👤 {tx.guestData.firstNameTH} {tx.guestData.lastNameTH}
+                      </span>
+                    )}
+                  </h4>
                   <p className={`font-black text-sm shrink-0 ${
                     tx.type === TransactionType.INCOME ? 'text-emerald-600' : 'text-rose-600'
                   }`}>
@@ -99,9 +114,9 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions, onDelet
                   {tx.imageUrl && (
                     <button 
                       onClick={() => onViewImage?.(tx.imageUrl!)}
-                      className="text-[10px] text-indigo-500 font-black hover:underline ml-auto flex items-center gap-1 bg-indigo-50 px-2 py-0.5 rounded-lg"
+                      className="text-[10px] text-indigo-500 font-black hover:underline ml-auto flex items-center gap-1 bg-indigo-50 px-2 py-0.5 rounded-lg transition-colors"
                     >
-                      ดูสลิปหลักฐาน
+                      ดูหลักฐานสแกน
                     </button>
                   )}
                 </div>

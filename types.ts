@@ -34,6 +34,7 @@ export interface GuestData {
   dob: string;
   issueDate: string;
   expiryDate: string;
+  religion?: string;
 }
 
 export interface Transaction {
@@ -46,7 +47,7 @@ export interface Transaction {
   imageUrl?: string;
   isReconciled: boolean;
   pmsReferenceId?: string;
-  guestData?: GuestData; // เพื่ออ้างอิงตอนออกบิล
+  guestData?: GuestData;
 }
 
 export interface Booking {

@@ -5,7 +5,7 @@ export enum TransactionType {
 }
 
 export enum CustomerType {
-  WALK_IN = 'Walk-in',
+  WAL_IN = 'Walk-in',
   BOOKING = 'Booking',
   CHECK_IN = 'Check-in'
 }
@@ -59,6 +59,7 @@ export interface Transaction {
   customerType?: CustomerType;
 }
 
+// Fixed: Added missing fields to Booking interface to support PMS, OTA Import, and Check-in features
 export interface Booking {
   id: string;
   guestName: string;
@@ -69,6 +70,18 @@ export interface Booking {
   status: 'confirmed' | 'checked_out' | 'pending' | 'checked_in' | 'locked';
   guestDetails?: GuestData;
   lockedUntil?: string; // ISO string for timestamp
+  
+  // Additional fields for extended booking data
+  nights?: number;
+  pricePerNight?: number;
+  depositAmount?: number;
+  depositStatus?: 'unpaid' | 'paid' | 'refunded';
+  paymentStatus?: 'unpaid' | 'paid' | 'deposit';
+  paidAmount?: number;
+  otaChannel?: string;
+  confirmationNumber?: string;
+  roomStatus?: string;
+  checkInTime?: string;
 }
 
 export interface OCRResult {
